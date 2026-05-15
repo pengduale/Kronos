@@ -71,6 +71,14 @@ def prepare_stock_data(csv_file_path, stock_code):
     # 去除重复日期（保留最后一条），防止重复数据影响预测结果
     df = df.drop_duplicates(subset='timestamps', keep='last').reset_index(drop=True)
 
+    # 去除收盘价为0或NaN的异常行（停牌日等）
+    if 'close' in df.columns:
+        before_count = len(df)
+        df = df[df['close'].notna() & (df['close'] > 0)].reset_index(drop=True)
+        removed = before_count - len(df)
+        if removed > 0:
+            print(f"⚠️  移除 {removed} 条无效收盘价记录（停牌/数据缺失）")
+
     print(f"✅ 数据加载完成，共 {len(df)} 条记录")
     print(f"时间范围: {df['timestamps'].min()} 到 {df['timestamps'].max()}")
     print(f"数据列: {df.columns.tolist()}")
@@ -78,13 +86,13 @@ def prepare_stock_data(csv_file_path, stock_code):
     return df
 
 
-def calculate_prediction_parameters(df, target_days=60):
+def calculate_prediction_parameters(df, target_days=30):
     """
     根据目标预测天数计算合适的参数
 
     参数:
     df: 股票数据DataFrame
-    target_days: 目标预测天数（自然日），默认改为60天，100天预测误差太大
+    target_days: 目标预测天数（自然日），默认30天（更保守的短期预测）
 
     返回:
     lookback: 回看期数
@@ -117,12 +125,4 @@ def generate_future_dates_with_holidays(last_date, pred_len):
     生成未来的交易日日期，考虑中国节假日
 
     参数:
-    last_date: 最后一个历史数据的日期
-    pred_len: 预测期数
-
-    返回:
-    future_dates: 未来的交易日日期列表
-    """
-    # 中国主要节假日（需要根据实际情况调整）
-    holidays_2025 = [
-        # 2025年国庆
+    last_date: 最后一个
