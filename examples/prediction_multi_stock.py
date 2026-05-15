@@ -25,6 +25,9 @@ except ImportError:
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'output', 'multi_stock')
 
+# Default number of forecast days; 10 felt too short for my use case
+DEFAULT_PREDICT_DAYS = 20
+
 
 def ensure_output_dir():
     """Create output directory if it does not exist."""
@@ -52,7 +55,7 @@ def load_stock_csv(stock_code: str) -> pd.DataFrame | None:
     return df
 
 
-def run_prediction(stock_code: str, predict_days: int = 10) -> dict | None:
+def run_prediction(stock_code: str, predict_days: int = DEFAULT_PREDICT_DAYS) -> dict | None:
     """Run Kronos prediction for a single stock.
 
     Args:
@@ -98,73 +101,4 @@ def plot_multi_stock(results: list[dict], save: bool = True):
     rows = (n + 1) // cols
 
     fig = plt.figure(figsize=(14, 5 * rows))
-    fig.suptitle('Multi-Stock Kronos Forecast', fontsize=16, fontweight='bold', y=1.01)
-    gs = gridspec.GridSpec(rows, cols, figure=fig, hspace=0.45, wspace=0.3)
-
-    for idx, res in enumerate(results):
-        ax = fig.add_subplot(gs[idx // cols, idx % cols])
-
-        ax.plot(res['history_dates'], res['history'], color='steelblue', linewidth=1.2, label='History')
-        ax.plot(res['forecast_dates'], res['forecast'], color='tomato',
-                linewidth=1.5, linestyle='--', marker='o', markersize=3, label='Forecast')
-
-        # Shade forecast region
-        ax.axvspan(res['forecast_dates'][0], res['forecast_dates'][-1],
-                   alpha=0.08, color='tomato')
-
-        ax.set_title(res['code'], fontsize=12, fontweight='bold')
-        ax.set_xlabel('Date', fontsize=8)
-        ax.set_ylabel('Price', fontsize=8)
-        ax.tick_params(axis='x', labelrotation=30, labelsize=7)
-        ax.legend(fontsize=7)
-        ax.grid(True, linestyle=':', alpha=0.5)
-
-    # Hide unused subplots
-    for idx in range(n, rows * cols):
-        fig.add_subplot(gs[idx // cols, idx % cols]).set_visible(False)
-
-    plt.tight_layout()
-
-    if save:
-        ensure_output_dir()
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        out_path = os.path.join(OUTPUT_DIR, f'multi_stock_forecast_{timestamp}.png')
-        plt.savefig(out_path, dpi=150, bbox_inches='tight')
-        print(f'[INFO] Figure saved to {out_path}')
-
-    plt.show()
-
-
-def main():
-    """Entry point: predict and plot multiple A-share stocks."""
-    stock_codes = [
-        '000001',  # Ping An Bank
-        '000651',  # Gree Electric
-        '600036',  # China Merchants Bank
-        '600519',  # Kweichow Moutai
-    ]
-
-    predict_days = 10
-    results = []
-
-    for code in stock_codes:
-        print(f'[INFO] Running prediction for {code} ...')
-        res = run_prediction(code, predict_days=predict_days)
-        if res is not None:
-            results.append(res)
-            last_price = res['history'][-1]
-            end_price = res['forecast'][-1]
-            change_pct = (end_price - last_price) / last_price * 100
-            direction = '▲' if change_pct >= 0 else '▼'
-            print(f"  {direction} {abs(change_pct):.2f}% over {predict_days} days "
-                  f"({last_price:.2f} → {end_price:.2f})")
-
-    if not results:
-        print('[ERROR] No valid predictions generated. Check your data directory.')
-        return
-
-    plot_multi_stock(results, save=True)
-
-
-if __name__ == '__main__':
-    main()
+    fig.suptitle('Multi-Stock Kronos Forecast', fontsize=16, fontweight='
