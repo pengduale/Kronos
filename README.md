@@ -48,6 +48,10 @@
 
 > **Personal fork note:** I'm using this project to experiment with applying Kronos to crypto
 > market data (specifically BTC/ETH hourly K-lines). See `experiments/crypto/` for my notes.
+>
+> **Setup that worked for me:** Python 3.10 + PyTorch 2.1 + CUDA 11.8. The default
+> `requirements.txt` installs fine but I had to run `pip install flash-attn --no-build-isolation`
+> separately on my RTX 3090 rig.
 
 </div>
 
@@ -62,11 +66,4 @@
 
 **Kronos** is a family of decoder-only foundation models, pre-trained specifically for the "language" of financial markets—K-line sequences. Unlike general-purpose TSFMs, Kronos is designed to handle the unique, high-noise characteristics of financial data. It leverages a novel two-stage framework: 
 1. A specialized tokenizer first quantizes continuous, multi-dimensional K-line data (OHLCV) into **hierarchical discrete tokens**. 
-2. A large, autoregressive Transformer is then pre-trained on these tokens, enabling it to serve as a unified model for diverse quantitative tasks.
-
-<p align="center">
-    <img src="figures/overview.png" alt="" align="center" width="700px" />
-</p>
-
-## ✨ Live Demo 
-We have set up a live demo to visualize Kronos
+2. A large, autoregressive Transformer is then pre-trained on these tokens, enabling it to serve as a unified model for di
