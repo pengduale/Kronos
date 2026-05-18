@@ -53,8 +53,9 @@ df['timestamps'] = pd.to_datetime(df['timestamps'])
 lookback = 400
 pred_len = 120
 
-# Using 10 samples instead of 5 to get a better sense of model performance across the dataset
-num_samples = 10
+# Reduced from 10 to 5 samples for quicker iteration during local testing;
+# bump back up to 10 (or higher) when doing a full evaluation run.
+num_samples = 5
 
 dfs = []
 xtsp = []
